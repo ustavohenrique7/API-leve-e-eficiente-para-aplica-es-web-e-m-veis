@@ -1,0 +1,114 @@
+🚀 Projeto: Fastify CRUD API
+
+
+📁 Estrutura
+fastify-crud-api/
+│
+├── src/
+│   ├── server.js
+│   └── routes.js
+│
+├── package.json
+
+
+📦 1. Instalação
+
+No terminal:
+
+npm init -y
+npm install fastify
+
+
+⚙️ 2. Servidor (server.js)
+const fastify = require('fastify')({ logger: true });
+const routes = require('./routes');
+
+// registra rotas
+fastify.register(routes);
+
+// inicia servidor
+fastify.listen({ port: 3000 }, (err) => {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    }
+    console.log('Servidor rodando em http://localhost:3000');
+});
+
+
+🔗 3. Rotas CRUD (routes.js)
+module.exports = async function (fastify) {
+
+    let items = [];
+    let id = 1;
+
+    // CREATE
+    fastify.post('/items', async (request, reply) => {
+        const { nome } = request.body;
+        const item = { id: id++, nome };
+        items.push(item);
+        return item;
+    });
+
+    // READ (todos)
+    fastify.get('/items', async () => {
+        return items;
+    });
+
+    // READ (por id)
+    fastify.get('/items/:id', async (request, reply) => {
+        const item = items.find(i => i.id == request.params.id);
+        if (!item) {
+            reply.code(404).send({ erro: "Item não encontrado" });
+        }
+        return item;
+    });
+
+    // UPDATE
+    fastify.put('/items/:id', async (request, reply) => {
+        const { nome } = request.body;
+        const item = items.find(i => i.id == request.params.id);
+
+        if (!item) {
+            return reply.code(404).send({ erro: "Item não encontrado" });
+        }
+
+        item.nome = nome;
+        return item;
+    });
+
+    // DELETE
+    fastify.delete('/items/:id', async (request, reply) => {
+        const index = items.findIndex(i => i.id == request.params.id);
+
+        if (index === -1) {
+            return reply.code(404).send({ erro: "Item não encontrado" });
+        }
+
+        items.splice(index, 1);
+        return { mensagem: "Item removido" };
+    });
+};
+
+
+▶️ 4. Rodar o projeto
+node src/server.js
+🧪 Testar (Postman ou navegador)
+Criar item
+POST /items
+Body:
+{
+  "nome": "Curso Node"
+}
+Listar todos
+GET /items
+Buscar por ID
+GET /items/1
+Atualizar
+PUT /items/1
+Body:
+{
+  "nome": "Curso atualizado"
+}
+Deletar
+DELETE /items/1
